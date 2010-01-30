@@ -5,57 +5,55 @@ Created on 22.09.2009
 """
 
 from django.db import models
+from google.appengine.ext import db
+from django.utils.translation import ugettext_lazy as _
 
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
-from django.contrib.sites.models import Site 
+from django.contrib.sites.models import Site
+# Create your models here.
 
-class FacebookProfile(models.Model):
-    user = models.ForeignKey(User)
-    site = models.ForeignKey(Site, default=Site.objects.get_current)
-    uid = models.CharField(max_length=255, blank=False, null=False)
+
+class FacebookProfile(db.Model):
+    user = db.ReferenceProperty(User, verbose_name=_('user'), collection_name=None)
+    uid = db.StringProperty(verbose_name=_('uid'), required=True)
     
     def __unicode__(self):
-        return '%s: %s' % (self.user, self.uid)
+        return '%s: %s' % (self.user.username, self.uid)
     
     def authenticate(self):
         return authenticate(uid=self.uid)
-
-class TwitterProfile(models.Model):
-    user = models.ForeignKey(User)
-    site = models.ForeignKey(Site, default=Site.objects.get_current)
-    twitter_id = models.PositiveIntegerField()
+    
+class TwitterProfile(db.Model):
+    user = db.ReferenceProperty(reference_class=User, verbose_name=_('user'), collection_name=None)
+    twitter_id = db.IntegerProperty(verbose_name=_('twitter id'))
     
     def __unicode__(self):
-        return '%s: %s' % (self.user, self.twitter_id)
+        return '%s: %s' % (self.user.username, self.twitter_id)
     
     def authenticate(self):
         return authenticate(twitter_id=self.twitter_id)
 
-class FriendFeedProfile(models.Model):
-    user = models.ForeignKey(User)
-    site = models.ForeignKey(Site, default=Site.objects.get_current)
+class FriendFeedProfile(db.Model):
+    user = db.ReferenceProperty(User, verbose_name=_('user'), collection_name=None)
 
-class OpenIDProfile(models.Model):
-    user = models.ForeignKey(User)
-    site = models.ForeignKey(Site, default=Site.objects.get_current)
-    identity = models.TextField()
+class OpenIDProfile(db.Model):
+    user = db.ReferenceProperty(User, verbose_name=_('user'), collection_name=None)
+    identity = db.TextProperty(verbose_name=_('identity'), required=False)
     
     def authenticate(self):
         return authenticate(identity=self.identity)
 
-class OpenIDStore(models.Model):
-    site = models.ForeignKey(Site, default=Site.objects.get_current)
-    server_url = models.CharField(max_length=255)
-    handle = models.CharField(max_length=255)
-    secret = models.TextField()
-    issued = models.IntegerField()
-    lifetime = models.IntegerField()
-    assoc_type = models.TextField()
+class OpenIDStore(db.Model):
+    server_url = db.LinkProperty()
+    handle = db.StringProperty()
+    secret = db.TextProperty()
+    issued = db.IntegerProperty()
+    lifetime = db.IntegerProperty()
+    assoc_type = db.TextProperty()
 
-class OpenIDNonce(models.Model):
-    server_url = models.CharField(max_length=255)
-    timestamp = models.IntegerField()
-    salt = models.CharField(max_length=255)
-    date_created = models.DateTimeField(auto_now_add=True)
-    
+class OpenIDNonce(db.Model):
+    server_url = db.StringProperty(verbose_name=_('server url'), required=True)
+    timestamp = db.IntegerProperty(verbose_name=_('timestamp'), required=True)
+    salt = db.StringProperty(verbose_name=_('salt'), required=True)
+    date_created = db.DateTimeProperty(verbose_name=_('date created'), auto_now_add=True)
