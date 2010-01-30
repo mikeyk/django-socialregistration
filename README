@@ -2,6 +2,12 @@
 Django Social Registration
 ==========================
 
+Note
+============
+
+This fork modifies the original socialregistration project to work with
+GoogleAppEngine through appenginepatch
+
 Django Social Registration enables developers to add alternative registration
 methods based on third party sites.
 
